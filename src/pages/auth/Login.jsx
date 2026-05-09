@@ -34,7 +34,7 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 flex">
 
       {/* Panel gauche — branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gray-900 flex-col justify-between p-12">
+      <div className="hidden md:flex md:w-2/5 bg-gray-900 flex-col justify-between p-10">
         <div>
           <span className="text-white text-xl font-bold tracking-tight">BudgetTrack</span>
         </div>
