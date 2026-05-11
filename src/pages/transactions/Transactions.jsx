@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { transactionService, categoryService } from '../../services/api'
 
-const fmt = n => new Intl.NumberFormat('fr-FR').format(Math.round(n)) + ' FCFA'
+const fmt  = n => new Intl.NumberFormat('fr-FR').format(Math.round(n))
+const fmtF = n => fmt(n) + ' FCFA'
 
 const PAYMENT_METHODS = [
   { value: 'cash',         label: 'Espèces' },
@@ -13,13 +14,23 @@ const PAYMENT_METHODS = [
   { value: 'other',        label: 'Autre' },
 ]
 
+const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
+
 const EMPTY_FORM = {
   amount: '', type: 'expense', category_id: '',
   description: '', transaction_date: new Date().toISOString().split('T')[0],
   payment_method: 'cash', reference: '',
 }
 
-// ── Modal ajout / modification ─────────────────────────────
+function Icon({ path, className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d={path} />
+    </svg>
+  )
+}
+
+// ── Modal ──────────────────────────────────────────────────
 function TransactionModal({ open, onClose, onSaved, categories, editing }) {
   const [form, setForm]     = useState(EMPTY_FORM)
   const [errors, setErrors] = useState({})
@@ -62,39 +73,43 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
     }
   }
 
-  const inputCls = "w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition"
+  const inputCls = "w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition placeholder-gray-300"
   const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
-
   const filteredCats = categories.filter(c => c.type === form.type)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 z-10 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-0 sm:px-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-6 z-10 max-h-[92vh] overflow-y-auto">
+
+        {/* Handle mobile */}
+        <div className="sm:hidden w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
 
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-base font-bold text-gray-900">
-            {editing ? 'Modifier la transaction' : 'Nouvelle transaction'}
+            {editing ? 'Modifier' : 'Nouvelle transaction'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition text-lg">✕</button>
+          <button onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition">
+            <Icon path="M6 18L18 6M6 6l12 12" />
+          </button>
         </div>
 
         <form onSubmit={submit} className="space-y-4">
 
-          {/* Type */}
-          <div>
-            <label className={labelCls}>Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              {['expense', 'income'].map(t => (
-                <button key={t} type="button" onClick={() => setForm({ ...form, type: t, category_id: '' })}
-                  className={`py-2.5 rounded-lg text-sm font-semibold transition border
-                    ${form.type === t
-                      ? t === 'expense' ? 'bg-red-50 border-red-300 text-red-700' : 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                      : 'bg-gray-50 border-gray-200 text-gray-400 hover:border-gray-300'}`}>
-                  {t === 'expense' ? 'Dépense' : 'Revenu'}
-                </button>
-              ))}
-            </div>
+          {/* Type toggle */}
+          <div className="grid grid-cols-2 gap-2 p-1 bg-gray-50 rounded-xl">
+            {['expense', 'income'].map(t => (
+              <button key={t} type="button" onClick={() => setForm({ ...form, type: t, category_id: '' })}
+                className={`py-2.5 rounded-lg text-sm font-semibold transition-all
+                  ${form.type === t
+                    ? t === 'expense'
+                      ? 'bg-white shadow-sm text-red-600 border border-red-100'
+                      : 'bg-white shadow-sm text-emerald-600 border border-emerald-100'
+                    : 'text-gray-400 hover:text-gray-600'}`}>
+                {t === 'expense' ? 'Dépense' : 'Revenu'}
+              </button>
+            ))}
           </div>
 
           {/* Montant */}
@@ -110,32 +125,28 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
             <label className={labelCls}>Catégorie</label>
             <select name="category_id" value={form.category_id} onChange={handle} className={inputCls}>
               <option value="">Sans catégorie</option>
-              {filteredCats.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              {filteredCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
 
-          {/* Date */}
-          <div>
-            <label className={labelCls}>Date</label>
-            <input type="date" name="transaction_date" value={form.transaction_date} onChange={handle}
-              required className={inputCls} />
-          </div>
-
-          {/* Mode de paiement */}
-          <div>
-            <label className={labelCls}>Mode de paiement</label>
-            <select name="payment_method" value={form.payment_method} onChange={handle} className={inputCls}>
-              {PAYMENT_METHODS.map(m => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))}
-            </select>
+          {/* Date + Paiement */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Date</label>
+              <input type="date" name="transaction_date" value={form.transaction_date} onChange={handle}
+                required className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Paiement</label>
+              <select name="payment_method" value={form.payment_method} onChange={handle} className={inputCls}>
+                {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+              </select>
+            </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className={labelCls}>Description <span className="normal-case font-normal text-gray-400">(optionnel)</span></label>
+            <label className={labelCls}>Description <span className="normal-case font-normal text-gray-300">(optionnel)</span></label>
             <input type="text" name="description" value={form.description} onChange={handle}
               placeholder="Ex: Marché, carburant..." className={inputCls} />
           </div>
@@ -143,15 +154,15 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
           {/* Référence mobile money */}
           {['orange_money', 'moov_money'].includes(form.payment_method) && (
             <div>
-              <label className={labelCls}>Référence transaction</label>
+              <label className={labelCls}>Référence</label>
               <input type="text" name="reference" value={form.reference} onChange={handle}
                 placeholder="Ex: OM-XXXXXXXX" className={inputCls} />
             </div>
           )}
 
           <button type="submit" disabled={saving}
-            className="w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white text-sm font-semibold py-3 rounded-lg transition-colors mt-2">
-            {saving ? 'Enregistrement...' : editing ? 'Modifier' : 'Ajouter'}
+            className="w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 text-white text-sm font-semibold py-3.5 rounded-xl transition-colors mt-2">
+            {saving ? 'Enregistrement...' : editing ? 'Modifier' : 'Ajouter la transaction'}
           </button>
         </form>
       </div>
@@ -193,61 +204,73 @@ export default function Transactions() {
   const totalIncome  = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
 
-  const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
 
-      {/* ── En-tête ───────────────────────────────────────── */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-          <p className="text-sm text-gray-400 mt-1">Historique de vos revenus et dépenses</p>
+          <p className="text-sm text-gray-400 mt-0.5">Historique de vos revenus et dépenses</p>
         </div>
         <button onClick={openAdd}
-          className="bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors">
-          + Ajouter
+          className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+          <Icon path="M12 4v16m8-8H4" className="w-3.5 h-3.5" />
+          Ajouter
         </button>
       </div>
 
-      {/* ── Résumé rapide ─────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white border border-gray-100 rounded-2xl p-5">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Revenus</p>
-          <p className="text-xl font-bold text-emerald-600">{fmt(totalIncome)}</p>
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center">
+              <Icon path="M7 11l5-5m0 0l5 5m-5-5v12" className="w-3.5 h-3.5 text-emerald-500" />
+            </div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Revenus</p>
+          </div>
+          <p className="text-xl font-bold text-emerald-600">+{fmtF(totalIncome)}</p>
         </div>
-        <div className="bg-white border border-gray-100 rounded-2xl p-5">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Dépenses</p>
-          <p className="text-xl font-bold text-red-500">{fmt(totalExpense)}</p>
+        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-red-50 rounded-lg flex items-center justify-center">
+              <Icon path="M17 13l-5 5m0 0l-5-5m5 5V6" className="w-3.5 h-3.5 text-red-400" />
+            </div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dépenses</p>
+          </div>
+          <p className="text-xl font-bold text-red-500">-{fmtF(totalExpense)}</p>
         </div>
       </div>
 
-      {/* ── Filtres ───────────────────────────────────────── */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-wrap gap-3">
+      {/* Filtres */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-wrap gap-2">
         <select value={filter.type} onChange={e => setFilter({ ...filter, type: e.target.value })}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-gray-900 bg-gray-50">
+          className="border border-gray-100 bg-gray-50 rounded-xl px-3 py-2 text-xs font-medium text-gray-600 focus:outline-none focus:border-gray-900 transition">
           <option value="">Tous les types</option>
           <option value="income">Revenus</option>
           <option value="expense">Dépenses</option>
         </select>
         <select value={filter.month} onChange={e => setFilter({ ...filter, month: e.target.value })}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-gray-900 bg-gray-50">
+          className="border border-gray-100 bg-gray-50 rounded-xl px-3 py-2 text-xs font-medium text-gray-600 focus:outline-none focus:border-gray-900 transition">
           {MONTHS_FR.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
         </select>
         <select value={filter.year} onChange={e => setFilter({ ...filter, year: e.target.value })}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-gray-900 bg-gray-50">
+          className="border border-gray-100 bg-gray-50 rounded-xl px-3 py-2 text-xs font-medium text-gray-600 focus:outline-none focus:border-gray-900 transition">
           {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
-      {/* ── Liste ─────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+      {/* Liste */}
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-40">
-            <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : transactions.length === 0 ? (
           <div className="text-center py-16">
+            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Icon path="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" className="w-5 h-5 text-gray-300" />
+            </div>
             <p className="text-gray-300 text-sm mb-3">Aucune transaction trouvée</p>
             <button onClick={openAdd}
               className="text-xs font-semibold text-gray-900 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -257,32 +280,36 @@ export default function Transactions() {
         ) : (
           <div className="divide-y divide-gray-50">
             {transactions.map(tx => (
-              <div key={tx.id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition group">
-                <div className="flex items-center gap-4">
-                  <div className={`w-1 h-8 rounded-full flex-shrink-0 ${tx.type === 'income' ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">
-                      {tx.description || tx.category?.name || 'Transaction'}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(tx.transaction_date).toLocaleDateString('fr-FR')}
-                      {tx.category && <> · <span>{tx.category.name}</span></>}
-                      {' · '}{PAYMENT_METHODS.find(m => m.value === tx.payment_method)?.label ?? 'Espèces'}
-                    </p>
-                  </div>
+              <div key={tx.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/50 transition-colors group">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0
+                  ${tx.type === 'income' ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                  <Icon
+                    path={tx.type === 'income' ? 'M7 11l5-5m0 0l5 5m-5-5v12' : 'M17 13l-5 5m0 0l-5-5m5 5V6'}
+                    className={`w-4 h-4 ${tx.type === 'income' ? 'text-emerald-500' : 'text-red-400'}`}
+                  />
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {tx.description || tx.category?.name || 'Transaction'}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(tx.transaction_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {tx.category && <> · {tx.category.name}</>}
+                    {' · '}{PAYMENT_METHODS.find(m => m.value === tx.payment_method)?.label ?? 'Espèces'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
                   <span className={`text-sm font-bold ${tx.type === 'income' ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {tx.type === 'income' ? '+' : '-'}{fmt(tx.amount)}
+                    {tx.type === 'income' ? '+' : '-'}{fmtF(tx.amount)}
                   </span>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                  <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(tx)}
-                      className="text-xs text-gray-400 hover:text-gray-900 border border-gray-200 px-2.5 py-1 rounded-md transition">
-                      Modifier
+                      className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition">
+                      <Icon path="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" className="w-3.5 h-3.5" />
                     </button>
                     <button onClick={() => remove(tx.id)}
-                      className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 px-2.5 py-1 rounded-md transition">
-                      Supprimer
+                      className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition">
+                      <Icon path="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -309,7 +336,6 @@ export default function Transactions() {
         )}
       </div>
 
-      {/* Modal */}
       <TransactionModal
         open={modalOpen} onClose={() => setModalOpen(false)}
         onSaved={load} categories={categories} editing={editing}
