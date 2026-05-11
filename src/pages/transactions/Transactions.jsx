@@ -51,7 +51,6 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
       setForm(EMPTY_FORM)
     }
     setErrors({})
-    setShowMore(false)
   }, [editing, open])
 
   if (!open) return null
