@@ -83,11 +83,14 @@ export default function Register() {
 
           {/* Logo mobile uniquement */}
           {!isDesktop && (
-            <div className="flex items-center gap-2.5 mb-8">
-              <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
-                <span className="text-white text-sm font-black">B</span>
+            <div className="w-full bg-gray-900 px-6 py-5 mb-8" style={{ marginLeft: '-24px', marginRight: '-24px', marginTop: '-40px', width: 'calc(100% + 48px)' }}>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">
+                  <span className="text-white text-sm font-black">B</span>
+                </div>
+                <span className="text-white font-bold text-lg tracking-tight">BudgetTrack</span>
               </div>
-              <span className="text-gray-900 font-bold text-lg tracking-tight">BudgetTrack</span>
+              <p className="text-gray-400 text-xs mt-1">Créez votre compte gratuitement</p>
             </div>
           )}
 
