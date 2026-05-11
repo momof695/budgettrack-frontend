@@ -51,6 +51,7 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
       setForm(EMPTY_FORM)
     }
     setErrors({})
+    setShowMore(false)
   }, [editing, open])
 
   if (!open) return null
@@ -73,6 +74,7 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
     }
   }
 
+  const [showMore, setShowMore] = useState(false)
   const inputCls = "w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition placeholder-gray-300"
   const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
   const filteredCats = categories.filter(c => c.type === form.type)
@@ -129,19 +131,11 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
             </select>
           </div>
 
-          {/* Date + Paiement */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Date</label>
-              <input type="date" name="transaction_date" value={form.transaction_date} onChange={handle}
-                required className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Paiement</label>
-              <select name="payment_method" value={form.payment_method} onChange={handle} className={inputCls}>
-                {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-              </select>
-            </div>
+          {/* Date */}
+          <div>
+            <label className={labelCls}>Date</label>
+            <input type="date" name="transaction_date" value={form.transaction_date} onChange={handle}
+              required className={inputCls} />
           </div>
 
           {/* Description */}
@@ -151,12 +145,30 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
               placeholder="Ex: Marché, carburant..." className={inputCls} />
           </div>
 
-          {/* Référence mobile money */}
-          {['orange_money', 'moov_money'].includes(form.payment_method) && (
-            <div>
-              <label className={labelCls}>Référence</label>
-              <input type="text" name="reference" value={form.reference} onChange={handle}
-                placeholder="Ex: OM-XXXXXXXX" className={inputCls} />
+          {/* Plus d'options */}
+          <button type="button" onClick={() => setShowMore(!showMore)}
+            className="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-700 transition font-medium">
+            <Icon path={showMore ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} className="w-3.5 h-3.5" />
+            {showMore ? "Moins d'options" : "Plus d'options"}
+          </button>
+
+          {showMore && (
+            <div className="space-y-4 pt-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Paiement</label>
+                  <select name="payment_method" value={form.payment_method} onChange={handle} className={inputCls}>
+                    {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                  </select>
+                </div>
+                {['orange_money', 'moov_money'].includes(form.payment_method) && (
+                  <div>
+                    <label className={labelCls}>Référence</label>
+                    <input type="text" name="reference" value={form.reference} onChange={handle}
+                      placeholder="OM-XXXXXXXX" className={inputCls} />
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
