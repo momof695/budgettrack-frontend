@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const inputClass = "w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition"
-const labelClass = "block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5"
+const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition"
+const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
 
 export default function Register() {
   const { register } = useAuth()
@@ -34,62 +34,84 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
 
       {/* Panel gauche — branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gray-900 flex-col justify-between p-12">
-        <span className="text-white text-xl font-bold tracking-tight">BudgetTrack</span>
-        <div>
+      <div className="md:w-2/5 bg-gray-900 flex flex-col md:justify-between px-8 pt-10 pb-8 md:p-12 md:min-h-screen">
+
+        {/* Logo */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">
+            <span className="text-white text-sm font-black">B</span>
+          </div>
+          <span className="text-white font-bold text-lg tracking-tight">BudgetTrack</span>
+        </div>
+
+        {/* Tagline desktop */}
+        <div className="hidden md:block">
           <h2 className="text-4xl font-bold text-white leading-snug">
             Commencez à gérer<br />votre argent aujourd'hui.
           </h2>
-          <p className="text-gray-400 mt-4 text-base leading-relaxed">
+          <p className="text-gray-400 mt-4 text-sm leading-relaxed">
             Créez votre compte gratuitement et commencez à suivre vos finances en moins de 2 minutes.
           </p>
+          <div className="mt-8 flex flex-col gap-3">
+            {[
+              'Inscription gratuite et rapide',
+              'Catégories créées automatiquement',
+              'Accessible sur tous vos appareils',
+            ].map(l => (
+              <div key={l} className="flex items-center gap-2.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                <p className="text-gray-300 text-sm">{l}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <p className="text-gray-600 text-xs">© 2025 BudgetTrack. Conçu pour l'Afrique.</p>
+
+        <p className="hidden md:block text-gray-600 text-xs">© 2025 BudgetTrack</p>
       </div>
 
       {/* Panel droit — formulaire */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm">
 
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Créer un compte</h1>
-            <p className="text-gray-500 text-sm mt-1">Remplissez les informations ci-dessous.</p>
+            <p className="text-gray-400 text-sm mt-1">Remplissez les informations ci-dessous.</p>
           </div>
 
-          <form onSubmit={submit} className="space-y-5">
+          <form onSubmit={submit} className="space-y-4">
 
             <div>
-              <label className={labelClass}>Nom complet</label>
+              <label className={labelCls}>Nom complet</label>
               <input type="text" name="name" value={form.name} onChange={handle}
-                placeholder="Moussa Traoré" required className={inputClass} />
+                placeholder="Moussa Traoré" required className={inputCls} />
               {errors.name && <p className="text-red-500 text-xs mt-1.5">{errors.name[0]}</p>}
             </div>
 
             <div>
-              <label className={labelClass}>Adresse email</label>
+              <label className={labelCls}>Adresse email</label>
               <input type="email" name="email" value={form.email} onChange={handle}
-                placeholder="vous@exemple.com" required className={inputClass} />
+                placeholder="vous@exemple.com" required className={inputCls} />
               {errors.email && <p className="text-red-500 text-xs mt-1.5">{errors.email[0]}</p>}
             </div>
 
             <div>
-              <label className={labelClass}>
-                Téléphone <span className="normal-case text-gray-400 font-normal">(optionnel)</span>
+              <label className={labelCls}>
+                Téléphone <span className="normal-case font-normal text-gray-400">(optionnel)</span>
               </label>
               <input type="text" name="phone" value={form.phone} onChange={handle}
-                placeholder="+226 70 00 00 00" className={inputClass} />
+                placeholder="+226 70 00 00 00" className={inputCls} />
             </div>
 
             <div>
-              <label className={labelClass}>Mot de passe</label>
+              <label className={labelCls}>Mot de passe</label>
               <div className="relative">
                 <input type={showPwd ? 'text' : 'password'} name="password" value={form.password} onChange={handle}
-                  placeholder="Minimum 8 caractères" required className={inputClass + ' pr-12'} />
+                  placeholder="Minimum 8 caractères" required className={inputCls + ' pr-16'} />
                 <button type="button" onClick={() => setShowPwd(!showPwd)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-xs transition">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-700 transition">
                   {showPwd ? 'Cacher' : 'Voir'}
                 </button>
               </div>
@@ -97,18 +119,18 @@ export default function Register() {
             </div>
 
             <div>
-              <label className={labelClass}>Confirmer le mot de passe</label>
-              <input type="password" name="password_confirmation" value={form.password_confirmation} onChange={handle}
-                placeholder="••••••••" required className={inputClass} />
+              <label className={labelCls}>Confirmer le mot de passe</label>
+              <input type="password" name="password_confirmation" value={form.password_confirmation}
+                onChange={handle} placeholder="••••••••" required className={inputCls} />
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white text-sm font-semibold py-3 rounded-lg transition-colors">
-              {loading ? 'Création en cours...' : 'Créer mon compte'}
+              className="w-full bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white text-sm font-semibold py-3.5 rounded-xl transition-colors">
+              {loading ? 'Création...' : 'Créer mon compte'}
             </button>
           </form>
 
-          <p className="text-sm text-gray-500 mt-6 text-center">
+          <p className="text-sm text-gray-400 mt-6 text-center">
             Déjà un compte ?{' '}
             <Link to="/login" className="text-gray-900 font-semibold hover:underline">
               Se connecter
