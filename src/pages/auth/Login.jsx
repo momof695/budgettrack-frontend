@@ -97,7 +97,7 @@ export default function Login() {
                   Mot de passe
                 </label>
                 <Link to="/forgot-password" className="text-xs text-gray-400 hover:text-gray-700 transition">
-                  Oublié ?
+                  Mot de passe oublié ?
                 </Link>
               </div>
               <div className="relative">
