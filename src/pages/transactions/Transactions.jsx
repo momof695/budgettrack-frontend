@@ -32,9 +32,10 @@ function Icon({ path, className = 'w-4 h-4' }) {
 
 // ── Modal ──────────────────────────────────────────────────
 function TransactionModal({ open, onClose, onSaved, categories, editing }) {
-  const [form, setForm]     = useState(EMPTY_FORM)
-  const [errors, setErrors] = useState({})
-  const [saving, setSaving] = useState(false)
+  const [form, setForm]       = useState(EMPTY_FORM)
+  const [errors, setErrors]   = useState({})
+  const [saving, setSaving]   = useState(false)
+  const [showMore, setShowMore] = useState(false)
 
   useEffect(() => {
     if (editing) {
@@ -51,6 +52,7 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
       setForm(EMPTY_FORM)
     }
     setErrors({})
+    setShowMore(false)
   }, [editing, open])
 
   if (!open) return null
@@ -73,7 +75,6 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
     }
   }
 
-  const [showMore, setShowMore] = useState(false)
   const inputCls = "w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition placeholder-gray-300"
   const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
   const filteredCats = categories.filter(c => c.type === form.type)
@@ -139,7 +140,9 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
 
           {/* Description */}
           <div>
-            <label className={labelCls}>Description <span className="normal-case font-normal text-gray-300">(optionnel)</span></label>
+            <label className={labelCls}>
+              Description <span className="normal-case font-normal text-gray-300">(optionnel)</span>
+            </label>
             <input type="text" name="description" value={form.description} onChange={handle}
               placeholder="Ex: Marché, carburant..." className={inputCls} />
           </div>
@@ -153,21 +156,19 @@ function TransactionModal({ open, onClose, onSaved, categories, editing }) {
 
           {showMore && (
             <div className="space-y-4 pt-1">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Paiement</label>
-                  <select name="payment_method" value={form.payment_method} onChange={handle} className={inputCls}>
-                    {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                  </select>
-                </div>
-                {['orange_money', 'moov_money'].includes(form.payment_method) && (
-                  <div>
-                    <label className={labelCls}>Référence</label>
-                    <input type="text" name="reference" value={form.reference} onChange={handle}
-                      placeholder="OM-XXXXXXXX" className={inputCls} />
-                  </div>
-                )}
+              <div>
+                <label className={labelCls}>Mode de paiement</label>
+                <select name="payment_method" value={form.payment_method} onChange={handle} className={inputCls}>
+                  {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                </select>
               </div>
+              {['orange_money', 'moov_money'].includes(form.payment_method) && (
+                <div>
+                  <label className={labelCls}>Référence transaction</label>
+                  <input type="text" name="reference" value={form.reference} onChange={handle}
+                    placeholder="Ex: OM-XXXXXXXX" className={inputCls} />
+                </div>
+              )}
             </div>
           )}
 
@@ -306,7 +307,6 @@ export default function Transactions() {
                   <p className="text-xs text-gray-400 mt-0.5">
                     {new Date(tx.transaction_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     {tx.category && <> · {tx.category.name}</>}
-                    {' · '}{PAYMENT_METHODS.find(m => m.value === tx.payment_method)?.label ?? 'Espèces'}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
