@@ -1,6 +1,6 @@
 // Fichier : src/pages/auth/Login.jsx
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -11,6 +11,13 @@ export default function Login() {
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -97,7 +104,7 @@ export default function Login() {
                   Mot de passe
                 </label>
                 <Link to="/forgot-password" className="text-xs text-gray-400 hover:text-gray-700 transition">
-                  Mot de passe oublié ?
+                  Oublié ?
                 </Link>
               </div>
               <div className="relative">

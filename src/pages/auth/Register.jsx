@@ -1,6 +1,6 @@
 // Fichier : src/pages/auth/Register.jsx
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -10,10 +10,18 @@ const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-w
 export default function Register() {
   const { register } = useAuth()
   const navigate     = useNavigate()
-  const [form, setForm]       = useState({ name: '', email: '', phone: '', password: '', password_confirmation: '' })
-  const [errors, setErrors]   = useState({})
-  const [loading, setLoading] = useState(false)
-  const [showPwd, setShowPwd] = useState(false)
+
+  const [form, setForm]           = useState({ name: '', email: '', phone: '', password: '', password_confirmation: '' })
+  const [errors, setErrors]       = useState({})
+  const [loading, setLoading]     = useState(false)
+  const [showPwd, setShowPwd]     = useState(false)
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768)
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handle = e => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -34,47 +42,54 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-50 flex" style={{ flexDirection: isDesktop ? 'row' : 'column' }}>
 
-      {/* Panel gauche — branding */}
-      <div className="md:w-2/5 bg-gray-900 flex flex-col md:justify-between px-8 pt-10 pb-8 md:p-12 md:min-h-screen">
-
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm font-black">B</span>
+      {/* Panel gauche — branding desktop uniquement */}
+      {isDesktop && (
+        <div style={{ width: '40%' }} className="bg-gray-900 flex flex-col justify-between p-12 min-h-screen">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">
+              <span className="text-white text-sm font-black">B</span>
+            </div>
+            <span className="text-white font-bold text-lg tracking-tight">BudgetTrack</span>
           </div>
-          <span className="text-white font-bold text-lg tracking-tight">BudgetTrack</span>
-        </div>
-
-        {/* Tagline desktop */}
-        <div className="hidden md:block">
-          <h2 className="text-4xl font-bold text-white leading-snug">
-            Commencez à gérer<br />votre argent aujourd'hui.
-          </h2>
-          <p className="text-gray-400 mt-4 text-sm leading-relaxed">
-            Créez votre compte gratuitement et commencez à suivre vos finances en moins de 2 minutes.
-          </p>
-          <div className="mt-8 flex flex-col gap-3">
-            {[
-              'Inscription gratuite et rapide',
-              'Catégories créées automatiquement',
-              'Accessible sur tous vos appareils',
-            ].map(l => (
-              <div key={l} className="flex items-center gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-                <p className="text-gray-300 text-sm">{l}</p>
-              </div>
-            ))}
+          <div>
+            <h2 className="text-4xl font-bold text-white leading-snug">
+              Commencez à gérer<br />votre argent aujourd'hui.
+            </h2>
+            <p className="text-gray-400 mt-4 text-sm leading-relaxed">
+              Créez votre compte gratuitement et commencez à suivre vos finances en moins de 2 minutes.
+            </p>
+            <div className="mt-8 flex flex-col gap-3">
+              {[
+                'Inscription gratuite et rapide',
+                'Catégories créées automatiquement',
+                'Accessible sur tous vos appareils',
+              ].map(l => (
+                <div key={l} className="flex items-center gap-2.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                  <p className="text-gray-300 text-sm">{l}</p>
+                </div>
+              ))}
+            </div>
           </div>
+          <p className="text-gray-600 text-xs">© 2025 BudgetTrack</p>
         </div>
-
-        <p className="hidden md:block text-gray-600 text-xs">© 2025 BudgetTrack</p>
-      </div>
+      )}
 
       {/* Panel droit — formulaire */}
       <div className="flex-1 flex items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm">
+
+          {/* Logo mobile uniquement */}
+          {!isDesktop && (
+            <div className="flex items-center gap-2.5 mb-8">
+              <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center">
+                <span className="text-white text-sm font-black">B</span>
+              </div>
+              <span className="text-gray-900 font-bold text-lg tracking-tight">BudgetTrack</span>
+            </div>
+          )}
 
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Créer un compte</h1>
